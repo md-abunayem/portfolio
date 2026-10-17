@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
   "dev": "tsx watch src/index.ts",
-  "build": "prisma generate --config prisma.config.ts && tsc",
+  "build": "prisma generate --config prisma.config.ts && tsc && node scripts/copy-prisma-runtime.cjs",
   "start": "node dist/index.js",
   "test": "node --import tsx --test tests/validation.test.ts",
   "test:api": "node --import tsx --test --test-concurrency=1 tests/api-connectivity.test.ts tests/api-public.test.ts tests/api-admin.test.ts",
