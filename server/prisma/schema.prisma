@@ -5,9 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-
 }
-
 
 enum ProjectStatus {
   DRAFT
@@ -20,26 +18,39 @@ enum MessageStatus {
   REPLIED
 }
 
-
 model Admin {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+}
+
+model Session {
   id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
+  tokenHash String   @unique
+  adminId   String
+  expiresAt DateTime
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
 }
 
 model Project {
   id          String        @id @default(cuid())
-  title       String
+  title       String        @map("name")
   slug        String        @unique
   description String
   image       String?
+  imagePublicId String?
   githubUrl   String?
   liveUrl     String?
   featured    Boolean       @default(false)
-  status      ProjectStatus @default(PUBLISHED)
+  status      ProjectStatus @default(DRAFT)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -47,71 +58,122 @@ model Project {
 }
 
 model ProjectTechnology {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   name      String
   projectId String
-  project   Project  @relation(fields: [projectId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, name])
 }
 
 model Skill {
-  id        String   @id @default(cuid())
-  name      String
-  category  String
-  level     Int?
-  icon      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  category      String
+  level         Int?
+  icon          String?
+  imageUrl      String?
+  imagePublicId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Experience {
-  id          String   @id @default(cuid())
-  company     String
-  position    String
-  location    String?
-  description String
-  startDate   DateTime
-  endDate     DateTime?
-  current     Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                   String    @id @default(cuid())
+  company              String
+  position             String
+  location             String?
+  description          String
+  startDate            DateTime
+  endDate              DateTime?
+  current              Boolean   @default(false)
+  companyLogoUrl       String?
+  companyLogoPublicId  String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 model Education {
-  id          String   @id @default(cuid())
-  institution String
-  degree      String
-  field       String?
-  description String?
-  startDate   DateTime
-  endDate     DateTime?
-  grade       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                       String    @id @default(cuid())
+  institution              String
+  degree                   String
+  field                    String?
+  description              String?
+  startDate                DateTime
+  endDate                  DateTime?
+  grade                    String?
+  institutionLogoUrl       String?
+  institutionLogoPublicId  String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 }
 
 model Achievement {
-  id           String   @id @default(cuid())
-  title        String
-  organization String?
-  description  String
-  date         DateTime?
-  link         String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String    @id @default(cuid())
+  title         String
+  organization  String?
+  description   String
+  date          DateTime?
+  link          String?
+  imageUrl      String?
+  imagePublicId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Research {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  authors     String?
-  publication String?
-  link        String?
-  publishedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  authors       String?
+  publication   String?
+  link          String?
+  publishedAt   DateTime?
+  imageUrl      String?
+  imagePublicId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Certification {
+  id            String    @id @default(cuid())
+  title         String
+  issuer        String?
+  description   String?
+  issueDate     DateTime?
+  expiryDate    DateTime?
+  credentialId  String?
+  credentialUrl String?
+  imageUrl      String?
+  imagePublicId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model PortfolioProfile {
+  id                   String   @id @default("default")
+  name                 String   @default("")
+  headline             String?
+  shortBio             String?
+  about                String?
+  profileImageUrl      String?
+  profileImagePublicId String?
+  heroImageUrl         String?
+  heroImagePublicId    String?
+  resumeUrl            String?
+  updatedAt            DateTime @updatedAt
+}
+
+model MediaAsset {
+  id               String    @id @default(cuid())
+  publicId         String    @unique
+  url              String
+  folder           String
+  createdAt        DateTime  @default(now())
+  deleteRequestedAt DateTime?
+
+  @@index([deleteRequestedAt])
+  @@index([createdAt])
 }
 
 model Message {

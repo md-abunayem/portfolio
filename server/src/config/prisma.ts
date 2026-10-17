@@ -1,6 +1,14 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma";
+import { env } from "./env";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: env.DATABASE_URL,
+  max: 10,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5_000,
+});
+const prisma = new PrismaClient({ adapter });
 
 export default prisma;
 

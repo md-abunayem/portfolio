@@ -1,17 +1,30 @@
-import {Request, Response} from "express";
-
+import { Request, Response } from "express";
+import * as projectService from "../services/project.service";
+import { createCrudHandlers } from "./crud.controllers";
+import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
-import * as projectService from "../services/project.sevice";
-import { ApiError } from "../utils/ApiError";
-import {ApiResponse} from "../utils/ApiResponse";
 
+export const adminProjectController = createCrudHandlers(
+  projectService.adminProjectCrudService,
+);
 
-export const createProject = asyncHandler(async (req: Request, res: Response) => {
-    const projectData = await projectService.createProject(req.body);
-
-    res.status(201).json(new ApiResponse(
-          201,
-          projectData,
-          "Project created successfully",
-        ),)
+export const listProjects = asyncHandler(async (req: Request, res: Response) => {
+  const projects = await projectService.listPublishedProjects(req.query);
+  res.json(new ApiResponse(200, projects, "Projects retrieved successfully."));
 });
+
+export const listFeaturedProjects = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const projects = await projectService.listFeaturedProjects();
+    res.json(
+      new ApiResponse(200, projects, "Featured projects retrieved successfully."),
+    );
+  },
+);
+
+export const getProject = asyncHandler(
+  async (req: Request, res: Response) => {
+    const project = await projectService.getPublishedProject(req.params.slug);
+    res.json(new ApiResponse(200, project, "Project retrieved successfully."));
+  },
+);
